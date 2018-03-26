@@ -17,6 +17,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Menu;
@@ -28,6 +29,8 @@ import android.widget.Toast;
 
 import com.example.administrator.demodownload.R;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -53,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn2.setOnClickListener(this);
 
         Button btn3 = (Button) findViewById(R.id.btn3);
-        btn3.setEnabled(false);
+//        btn3.setEnabled(false);
         btn3.setOnClickListener(this);
 
 
@@ -124,8 +127,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn3:
 
 
-
-                Check_Music1_Status();
+  //                  addLisview();
+              Check_Music1_Status();
 //                Check_Music2_Status(Music2_DownloadId);
 
                 break;
@@ -139,22 +142,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
-
+//    private void addLisview() {
+//        //First check if SD Card is present or not
+//        if (new SongsManager().isSDCardPresent()) {
+//
+//                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+//                startActivity(intent);
+//
+//
+//        } else
+//            Toast.makeText(MainActivity.this, "Oops!! There is no SD Card.", Toast.LENGTH_SHORT).show();
+//
+//    }
+//
     private void Check_Music1_Status() {
 ////
-        Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+        Intent intent = new Intent(MainActivity.this, MainActivity3.class);
         startActivity(intent);
-//        DownloadManager.Query Music1DownloadQuery = new DownloadManager.Query();
-//        //set the query filter to our previously Enqueued download
-//        Music1DownloadQuery.setFilterById(Music1_DownloadId);
-//
-//        //Query the download manager about downloads that have been requested.
-//        Cursor cursor = downloadManager.query(Music1DownloadQuery);
-//        if(cursor.moveToFirst()){
-//            DownloadStatus(cursor, Music1_DownloadId);
-//        }
-//
-  }
+//////        DownloadManager.Query Music1DownloadQuery = new DownloadManager.Query();
+//////        //set the query filter to our previously Enqueued download
+//////        Music1DownloadQuery.setFilterById(Music1_DownloadId);
+//////
+//////        //Query the download manager about downloads that have been requested.
+//////        Cursor cursor = downloadManager.query(Music1DownloadQuery);
+//////        if(cursor.moveToFirst()){
+////            DownloadStatus(cursor, Music1_DownloadId);
+        }
+////
+
 
 //    private void Check_Music2_Status(long Music2_DownloadId) {
 //
@@ -187,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch(status){
             case DownloadManager.STATUS_FAILED:
-                statusText = "STATUS_FAILED";
+                Toast.makeText(this, "STATUS_FAILED", Toast.LENGTH_SHORT).show();
                 switch(reason){
                     case DownloadManager.ERROR_CANNOT_RESUME:
                         reasonText = "ERROR_CANNOT_RESUME";
@@ -276,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
     private long DownloadData (Uri uri, View v) {
 
         long downloadReference;
@@ -290,21 +306,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         request.setDescription("Android Data download using DownloadManager.");
 
         //Set the local destination for the downloaded file to a path within the application's external files directory
-        if(v.getId() == R.id.btn1)
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC,"Em-gai-mua.mp3");
-        else if(v.getId() == R.id.btn2)
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC,"Yeu-la-tha-thu.mp3");
+        if(v.getId() == R.id.btn1){
+            check("Em-gai-mua.mp3");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC+ "/" +"Music Fubiz","Em-gai-mua.mp3");
+            Button btn1 = (Button) findViewById(R.id.btn1);
+            btn1.setEnabled(false);}
+        else if(v.getId() == R.id.btn2){
+            check("Yeu-la-tha-thu.mp3");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC+ "/" +"Music Fubiz","Yeu-la-tha-thu.mp3");
+            Button btn2 = (Button) findViewById(R.id.btn2);
+            btn2.setEnabled(false);}
 
 //        //Enqueue download and save the referenceId
         downloadReference = downloadManager.enqueue(request);
 ////
         Button btn3 = (Button) findViewById(R.id.btn3);
-        btn3.setEnabled(true);
+//        btn3.setEnabled(true);
 //
 ////        Button CancelDownload = (Button) findViewById(R.id.btn4);
 ////        CancelDownload.setEnabled(true);
 //
         return downloadReference;
+
+    }
+    private void check(String name) {
+        File apkStorage = new File(
+                Environment.DIRECTORY_MUSIC + "/"
+                        + "Music Fubiz");
+        if (!apkStorage.exists()) {
+            apkStorage.mkdir();
+            Log.e("MainActivity", "Directory Created.");
+        }
+
+        File outputFile = new File(apkStorage, name);//Create Output file in Main File
+
+        //Create New File if not present
+        if (!outputFile.exists()) {
+            try {
+                outputFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.e("MainActivity", "File Created");
+        }
+
+       //Create Output file in Main File
+
+        //Create New File if not present
 
     }
 
