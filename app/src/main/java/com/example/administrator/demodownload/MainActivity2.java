@@ -1,4 +1,4 @@
-//package com.example.administrator.demodownload;
+package com.example.administrator.demodownload;
 //
 //
 //import android.Manifest;
@@ -8,13 +8,31 @@
 //import android.content.pm.PackageManager;
 //import android.database.Cursor;
 //import android.net.Uri;
-//import android.os.Bundle;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Bundle;
 //import android.os.Environment;
 //import android.provider.MediaStore;
 //import android.support.annotation.NonNull;
 //import android.support.v4.app.ActivityCompat;
-//import android.support.v4.content.ContextCompat;
-//import android.support.v7.app.AppCompatActivity;
+import android.os.Environment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.SeekBar;
+import android.widget.Toast;
+
+import java.io.File;
+import java.util.ArrayList;
+
+import static android.os.Environment.DIRECTORY_MUSIC;
+
 //import android.util.Log;
 //import android.view.View;
 //import android.widget.AdapterView;
@@ -27,18 +45,106 @@
 //import java.util.ArrayList;
 //import java.util.List;
 //
-//public class MainActivity2 extends AppCompatActivity {
-//
+public class MainActivity2 extends AppCompatActivity {
+    //
 //
 ////    final static int MY_PERMISSION_REQUEST = 1;
 //
-////    ListView lv1;
-//    ArrayAdapter arrayAdapter;
+    ListView lv1;
+    String[] items;
+    MediaPlayer mp;
+    Thread updateSeekbar;
+    SeekBar seekBar;
+    Button btnpl;
+
+    //    ArrayAdapter arrayAdapter;
 ////    ArrayList<String> arrayList;
 //
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+        lv1 = (ListView) findViewById(R.id.lv1);
+        final ArrayList<File> mySongs = findSongs(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC));
+        items = new String [ mySongs.size()];
+
+        for (int i = 0; i <mySongs.size();i ++){
+
+//            toast(mySongs.get(i).getName().toString());
+            items[i] = mySongs.get(i).getName().toString().replace(".mp3","").replace(".wav","");
+
+        }
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.activity_main3,R.id.home,items);
+        lv1.setAdapter(arrayAdapter);
+        lv1.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                if(mp!=null){
+//                    mp.stop();
+//                    mp.release();
+//                }
+//                Uri uri = Uri.parse(mySongs.get(i).toString());
+//                mp = MediaPlayer.create(getApplicationContext(),uri);
+//                mp.start();
+
+                startActivity(new Intent(getApplicationContext(), Player.class).putExtra("pos", i).putExtra("songlist",mySongs));
+            }
+        });
+
+        btnpl = (Button)findViewById(R.id.btnplay);
+        btnpl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mp.isPlaying()){
+                    btnpl.setText("Play");
+                    mp.pause();
+                }
+                else {
+                    btnpl.setText("Pause");
+                    mp.start();
+                }
+            }
+        });
+        Button btnstop = (Button)findViewById(R.id.stop);
+        btnstop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mp.stop();
+            }
+        });
+        Button btnback = (Button)findViewById(R.id.btnback1);
+        btnback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity2.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+    }
+    public ArrayList<File> findSongs(File root){
+        ArrayList<File> a = new ArrayList<File>();
+        File[] files = root.listFiles();
+        for (File singleFile : files){
+            if(singleFile.isDirectory() && !singleFile.isHidden()){
+
+               a.addAll(findSongs(singleFile));
+
+            }
+            else {
+                if(singleFile.getName().endsWith(".mp3") || singleFile.getName().endsWith(".wav")){
+                    a.add(singleFile);
+                }
+            }
+        }
+        return a;
+    }
+    public void toast(String text){
+        Toast.makeText(getApplicationContext(),text,Toast.LENGTH_SHORT).show();
+    }
+}
 //        setContentView(R.layout.activity_main2);
 //        final ListView lv1 = (ListView) findViewById(R.id.lv1);
 //        lv1.setAdapter(new CustomAdapter(MainActivity2.this,getMusic()));

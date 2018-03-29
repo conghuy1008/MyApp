@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,12 +27,16 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.administrator.demodownload.R;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -50,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Button btn1 = (Button) findViewById(R.id.btn1);
         btn1.setOnClickListener(this);
+        ProgressBar prg = (ProgressBar)findViewById(R.id.progressdl);
 
         //Download Music from URL
         Button btn2 = (Button) findViewById(R.id.btn2);
@@ -113,15 +120,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
             case R.id.btn1:
+                if (isConnectingToInternet()){
                 Uri uri1 = Uri.parse("https://firebasestorage.googleapis.com/v0/b/test2-229c8.appspot.com/o/Em-Gai-Mua-Huong-Tram.mp3?alt=media&token=f5fcfb75-8071-438f-b356-fcd1be760441");
-                Music1_DownloadId = DownloadData(uri1, v);
+                Music1_DownloadId = DownloadData(uri1, v);}
+                else
+                    Toast.makeText(MainActivity.this, "Oops!! There is no internet connection. Please enable internet connection and try again.", Toast.LENGTH_SHORT).show();
                 break;
 
             //Download Music
             case R.id.btn2:
+                if (isConnectingToInternet()){
                 Uri uri2 = Uri.parse("https://firebasestorage.googleapis.com/v0/b/test2-229c8.appspot.com/o/Yeu-La-Tha-Thu-Em-Chua-18-OST-OnlyC.mp3?alt=media&token=47c5bafc-b744-4aab-8b0d-2b91e53699de");
-                Music2_DownloadId = DownloadData(uri2, v);
+                Music2_DownloadId = DownloadData(uri2, v);}
+                else
+                    Toast.makeText(MainActivity.this, "Oops!! There is no internet connection. Please enable internet connection and try again.", Toast.LENGTH_SHORT).show();
                 break;
+
 
             //check the status of all downloads
             case R.id.btn3:
@@ -132,6 +146,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                Check_Music2_Status(Music2_DownloadId);
 
                 break;
+//            case R.id.btn4:
+//                openDownloadedFolder();
+//                break;
+
 
             //cancel the ongoing download
 //            case R.id.btn4:
@@ -142,6 +160,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
+//    private void openDownloadedFolder() {
+//        //First check if SD Card is present or not
+//        if (new CheckForSDCard().isSDCardPresent()) {
+//
+//            //Get Download Directory File
+//            File apkStorage = new File(
+//                    Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_MUSIC) + "/"
+//                            + "Music Fubiz");
+//
+//            //If file is not present then display Toast
+//            if (!apkStorage.exists())
+//                Toast.makeText(MainActivity.this, "Right now there is no directory. Please download some file first.", Toast.LENGTH_SHORT).show();
+//
+//            else {
+//
+//                //If directory is present Open Folder
+//
+//                /** Note: Directory will open only if there is a app to open directory like File Manager, etc.  **/
+//
+//                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                Uri uri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath() + "/"
+//                        + "Music Fubiz");
+//                intent.setDataAndType(uri, "file/*");
+//                startActivity(Intent.createChooser(intent, "Open Folder"));
+//            }
+//
+//        } else
+//            Toast.makeText(MainActivity.this, "Oops!! There is no SD Card.", Toast.LENGTH_SHORT).show();
+//
+//    }
 //    private void addLisview() {
 //        //First check if SD Card is present or not
 //        if (new SongsManager().isSDCardPresent()) {
@@ -157,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //
     private void Check_Music1_Status() {
 ////
-        Intent intent = new Intent(MainActivity.this, MainActivity3.class);
+        Intent intent = new Intent(MainActivity.this, MainActivity2.class);
         startActivity(intent);
 //////        DownloadManager.Query Music1DownloadQuery = new DownloadManager.Query();
 //////        //set the query filter to our previously Enqueued download
@@ -185,111 +233,111 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //
 //    }
 
-    private void DownloadStatus(Cursor cursor, long DownloadId){
-
-        //column for download  status
-        int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
-        int status = cursor.getInt(columnIndex);
-        //column for reason code if the download failed or paused
-        int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
-        int reason = cursor.getInt(columnReason);
-        //get the download filename
-        int filenameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
-        String filename = cursor.getString(filenameIndex);
-
-        String statusText = "";
-        String reasonText = "";
-
-        switch(status){
-            case DownloadManager.STATUS_FAILED:
-                Toast.makeText(this, "STATUS_FAILED", Toast.LENGTH_SHORT).show();
-                switch(reason){
-                    case DownloadManager.ERROR_CANNOT_RESUME:
-                        reasonText = "ERROR_CANNOT_RESUME";
-                        break;
-                    case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                        reasonText = "ERROR_DEVICE_NOT_FOUND";
-                        break;
-                    case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                        reasonText = "ERROR_FILE_ALREADY_EXISTS";
-                        break;
-                    case DownloadManager.ERROR_FILE_ERROR:
-                        reasonText = "ERROR_FILE_ERROR";
-                        break;
-                    case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                        reasonText = "ERROR_HTTP_DATA_ERROR";
-                        break;
-                    case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                        reasonText = "ERROR_INSUFFICIENT_SPACE";
-                        break;
-                    case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-                        reasonText = "ERROR_TOO_MANY_REDIRECTS";
-                        break;
-                    case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                        reasonText = "ERROR_UNHANDLED_HTTP_CODE";
-                        break;
-                    case DownloadManager.ERROR_UNKNOWN:
-                        reasonText = "ERROR_UNKNOWN";
-                        break;
-                }
-                break;
-            case DownloadManager.STATUS_PAUSED:
-                statusText = "STATUS_PAUSED";
-                switch(reason){
-                    case DownloadManager.PAUSED_QUEUED_FOR_WIFI:
-                        reasonText = "PAUSED_QUEUED_FOR_WIFI";
-                        break;
-                    case DownloadManager.PAUSED_UNKNOWN:
-                        reasonText = "PAUSED_UNKNOWN";
-                        break;
-                    case DownloadManager.PAUSED_WAITING_FOR_NETWORK:
-                        reasonText = "PAUSED_WAITING_FOR_NETWORK";
-                        break;
-                    case DownloadManager.PAUSED_WAITING_TO_RETRY:
-                        reasonText = "PAUSED_WAITING_TO_RETRY";
-                        break;
-                }
-                break;
-            case DownloadManager.STATUS_PENDING:
-                statusText = "STATUS_PENDING";
-                break;
-            case DownloadManager.STATUS_RUNNING:
-                statusText = "STATUS_RUNNING";
-                break;
-            case DownloadManager.STATUS_SUCCESSFUL:
-                statusText = "STATUS_SUCCESSFUL";
-                reasonText = "Filename:\n" + filename;
-                break;
-        }
-
-        if(DownloadId == Music2_DownloadId) {
-
-            Toast toast = Toast.makeText(MainActivity.this,
-                    "Download Status:" + "\n" + statusText + "\n" +
-                            reasonText,
-                    Toast.LENGTH_LONG);
-            toast.show();
-
-        }
-        else {
-
-            Toast toast = Toast.makeText(MainActivity.this,
-                    "Download Status:"+ "\n" + statusText + "\n" +
-                            reasonText,
-                    Toast.LENGTH_LONG);
-            toast.show();
-
-            // Make a delay of 3 seconds so that next toast (Music Status) will not merge with this one.
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                }
-            }, 3000);
-
-        }
-
-    }
+//    private void DownloadStatus(Cursor cursor, long DownloadId){
+//
+//        //column for download  status
+//        int columnIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+//        int status = cursor.getInt(columnIndex);
+//        //column for reason code if the download failed or paused
+//        int columnReason = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+//        int reason = cursor.getInt(columnReason);
+//        //get the download filename
+//        int filenameIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME);
+//        String filename = cursor.getString(filenameIndex);
+//
+//        String statusText = "";
+//        String reasonText = "";
+//
+//        switch(status){
+//            case DownloadManager.STATUS_FAILED:
+//                Toast.makeText(this, "STATUS_FAILED", Toast.LENGTH_SHORT).show();
+//                switch(reason){
+//                    case DownloadManager.ERROR_CANNOT_RESUME:
+//                        reasonText = "ERROR_CANNOT_RESUME";
+//                        break;
+//                    case DownloadManager.ERROR_DEVICE_NOT_FOUND:
+//                        reasonText = "ERROR_DEVICE_NOT_FOUND";
+//                        break;
+//                    case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
+//                        reasonText = "ERROR_FILE_ALREADY_EXISTS";
+//                        break;
+//                    case DownloadManager.ERROR_FILE_ERROR:
+//                        reasonText = "ERROR_FILE_ERROR";
+//                        break;
+//                    case DownloadManager.ERROR_HTTP_DATA_ERROR:
+//                        reasonText = "ERROR_HTTP_DATA_ERROR";
+//                        break;
+//                    case DownloadManager.ERROR_INSUFFICIENT_SPACE:
+//                        reasonText = "ERROR_INSUFFICIENT_SPACE";
+//                        break;
+//                    case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
+//                        reasonText = "ERROR_TOO_MANY_REDIRECTS";
+//                        break;
+//                    case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
+//                        reasonText = "ERROR_UNHANDLED_HTTP_CODE";
+//                        break;
+//                    case DownloadManager.ERROR_UNKNOWN:
+//                        reasonText = "ERROR_UNKNOWN";
+//                        break;
+//                }
+//                break;
+//            case DownloadManager.STATUS_PAUSED:
+//                statusText = "STATUS_PAUSED";
+//                switch(reason){
+//                    case DownloadManager.PAUSED_QUEUED_FOR_WIFI:
+//                        reasonText = "PAUSED_QUEUED_FOR_WIFI";
+//                        break;
+//                    case DownloadManager.PAUSED_UNKNOWN:
+//                        reasonText = "PAUSED_UNKNOWN";
+//                        break;
+//                    case DownloadManager.PAUSED_WAITING_FOR_NETWORK:
+//                        reasonText = "PAUSED_WAITING_FOR_NETWORK";
+//                        break;
+//                    case DownloadManager.PAUSED_WAITING_TO_RETRY:
+//                        reasonText = "PAUSED_WAITING_TO_RETRY";
+//                        break;
+//                }
+//                break;
+//            case DownloadManager.STATUS_PENDING:
+//                statusText = "STATUS_PENDING";
+//                break;
+//            case DownloadManager.STATUS_RUNNING:
+//                statusText = "STATUS_RUNNING";
+//                break;
+//            case DownloadManager.STATUS_SUCCESSFUL:
+//                statusText = "STATUS_SUCCESSFUL";
+//                reasonText = "Filename:\n" + filename;
+//                break;
+//        }
+//
+//        if(DownloadId == Music2_DownloadId) {
+//
+//            Toast toast = Toast.makeText(MainActivity.this,
+//                    "Download Status:" + "\n" + statusText + "\n" +
+//                            reasonText,
+//                    Toast.LENGTH_LONG);
+//            toast.show();
+//
+//        }
+//        else {
+//
+//            Toast toast = Toast.makeText(MainActivity.this,
+//                    "Download Status:"+ "\n" + statusText + "\n" +
+//                            reasonText,
+//                    Toast.LENGTH_LONG);
+//            toast.show();
+//
+//            // Make a delay of 3 seconds so that next toast (Music Status) will not merge with this one.
+//            final Handler handler = new Handler();
+//            handler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                }
+//            }, 3000);
+//
+//        }
+//
+//    }
 
 
     private long DownloadData (Uri uri, View v) {
@@ -308,16 +356,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Set the local destination for the downloaded file to a path within the application's external files directory
         if(v.getId() == R.id.btn1){
             check("Em-gai-mua.mp3");
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC+ "/" +"Music Fubiz","Em-gai-mua.mp3");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC+ "/" +"Music Fubiz","Em gái mưa.mp3");
             Button btn1 = (Button) findViewById(R.id.btn1);
-            btn1.setEnabled(false);}
+            btn1.setEnabled(false);
+            }
         else if(v.getId() == R.id.btn2){
             check("Yeu-la-tha-thu.mp3");
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC+ "/" +"Music Fubiz","Yeu-la-tha-thu.mp3");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MUSIC+ "/" +"Music Fubiz","Yêu là tha thu.mp3");
             Button btn2 = (Button) findViewById(R.id.btn2);
-            btn2.setEnabled(false);}
+            btn2.setEnabled(false);
+            }
 
 //        //Enqueue download and save the referenceId
+
         downloadReference = downloadManager.enqueue(request);
 ////
         Button btn3 = (Button) findViewById(R.id.btn3);
@@ -333,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         File apkStorage = new File(
                 Environment.DIRECTORY_MUSIC + "/"
                         + "Music Fubiz");
-        if (!apkStorage.exists()) {
+        if (apkStorage.exists()) {
             apkStorage.mkdir();
             Log.e("MainActivity", "Directory Created.");
         }
@@ -346,14 +397,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 outputFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
+                outputFile = null;
+                Log.e("MainActivity", "Download Error Exception " + e.getMessage());
             }
             Log.e("MainActivity", "File Created");
         }
+
+
+        //Close all connection after doing task
+
+}
 
        //Create Output file in Main File
 
         //Create New File if not present
 
+
+    private boolean isConnectingToInternet() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager
+                .getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected())
+            return true;
+        else
+            return false;
     }
 
     private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {

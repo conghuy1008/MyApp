@@ -10,7 +10,10 @@
    <TextView
        android:id="@+id/home"
        android:layout_width="wrap_content"
-       android:layout_height="wrap_content" />
+       android:layout_height="wrap_content"
+       android:textSize="20dp"
+       android:padding="10dp"
+       android:textColor="#0b0b0b"/>
     <!--<ListView-->
         <!--android:id="@+id/lv1"-->
         <!--android:layout_width="wrap_content"-->

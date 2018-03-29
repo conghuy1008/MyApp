@@ -6,11 +6,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
 
-    tools:context="com.example.administrator.demodownload.MainActivity2">
+    >
+
     <ListView
         android:id="@+id/lv1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_weight="7"></ListView>
     <LinearLayout
         android:layout_width="wrap_content"
@@ -20,14 +21,18 @@
         android:orientation="horizontal"
         android:layout_weight="1">
 
+    <Button
+        android:id="@+id/btnplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pause"/>
 
-
-    <!--<Button-->
-        <!--android:id="@+id/display"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text=""-->
-       <!--/>-->
+    <Button
+        android:id="@+id/stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop"
+       />
     <Button
         android:id="@+id/btnback1"
         android:layout_width="wrap_content"
